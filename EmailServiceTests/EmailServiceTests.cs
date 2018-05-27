@@ -46,5 +46,17 @@ namespace EmailServiceTests
         }
 
         //TODO: More tests!
+
+        [Fact]
+        public void Should_Handle_Connection_Failure()
+        {
+            var email = new Email { To = "George", Body = "Very Important!" };
+            _mockClient.Setup(call => call.SendEmail(It.IsAny<string>(), It.IsAny<string>())).Throws(new Exception("Connection Failed"));
+
+            var result = _sut.SendEmail(email);
+
+            Assert.Equal("Failure.", result);
+        }
+
     }
 }
