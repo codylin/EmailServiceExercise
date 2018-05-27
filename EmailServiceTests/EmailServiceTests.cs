@@ -65,7 +65,7 @@ namespace EmailServiceTests
             _mockClient.Setup(call => call.Close())
                 .Throws(new Exception("Unexpected Error"));
 
-            var result = _sut.SendEmail(email);
+            var result = _sut.Close(email);
 
             Assert.Equal("Failure.", result);
         }
