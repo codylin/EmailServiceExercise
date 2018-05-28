@@ -2,7 +2,7 @@
 
 ## Assumptions
 
-`Connection Failed` exception: I'm assuming that I do not have to implement retry since callers hae implemented it, so I only wrote the test that replicates the failure
+`Connection Failed` exception: If implementation of the retry mechanism is not needed, then please go to branch #3.
 
 `Unexpected Error` exception: I'm assuming the main issue is to handle the exception so that the service does not crash
 
