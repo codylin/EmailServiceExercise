@@ -3,6 +3,7 @@ using System.Threading;
 using EmailService.Contracts;
 using Microsoft.Extensions.Logging;
 using MockEmailClient;
+using Polly;
 
 namespace EmailService.Service
 {
@@ -29,11 +30,20 @@ namespace EmailService.Service
             {
                 _logger.LogError(e, $"Error sending email to {email.To}");
                 status = "Failure.";
+                // quick and dirty retry. numbers are hardcoded for now
+                _logger.LogError(e, $"Begin Retry");
+                var policyResult = Policy
+                    .Handle<Exception>(ex => ex.Message == "Connection Failed")
+                    .WaitAndRetry(5, retryAttempt => TimeSpan.FromSeconds(5))
+                    .ExecuteAndCapture(() => { SendEmailHelper(email); });
+                status = (policyResult.FinalException == null) ? "Success!" : "Failure.";
+                
             }
             finally
             {
                 try
                 {
+                    _logger.LogInformation($"closing email to {email.To}");
                     Close();
 
                 }
@@ -54,8 +64,6 @@ namespace EmailService.Service
         //Separate SendEmailHelper() Method for unit testing
         public String SendEmailHelper(Email email)
         {
-            _logger.LogInformation($"Sending email to {email.To}");
-
                 _emailClient.SendEmail(email.To, email.Body);
                 return "Success!";
         }

@@ -73,16 +73,30 @@ namespace EmailServiceTests
             Assert.Equal("Unexpected Error", ex.Message);
         }
         //Testing different Paths for SendEmail
-        //SendEmail should return fail if connection failed
+        //SendEmail should return fail if connection failed even after retrying
         [Fact]
-        public void Should_Handle_Connetion_Failed()
+        public void Should_Handle_Connetion_Failed_After_Retry()
+        {
+            var email = new Email { To = "George", Body = "Very Important!" };
+            _mockClient.Setup(call => call.SendEmail(It.IsAny<string>(), It.IsAny<string>()))
+                .Throws(new Exception("Connection Failed"));
+            
+            var result = _sut.SendEmail(email);
+
+            Assert.Equal("Failure.", result);
+        }
+
+        //SendEmail should retry 6 times before failing (hardcoded)
+        [Fact]
+        public void Should_Retry_Some_Amount_of_Times()
         {
             var email = new Email { To = "George", Body = "Very Important!" };
             _mockClient.Setup(call => call.SendEmail(It.IsAny<string>(), It.IsAny<string>()))
                 .Throws(new Exception("Connection Failed"));
 
             var result = _sut.SendEmail(email);
-
+            // first try + 6 retries
+            _mockClient.Verify(call => call.SendEmail(email.To, email.Body), Times.Exactly(7));
             Assert.Equal("Failure.", result);
         }
         //SendEmail should return fail for unexpected error
