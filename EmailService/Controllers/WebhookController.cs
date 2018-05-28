@@ -16,9 +16,19 @@ namespace EmailService.Controllers
 
         // POST api/webhook
         [HttpPost]
-        public void Post([FromBody] Email email)
+        public IActionResult Post([FromBody] Email email)
         {
-            //TODO: Implement this!
+            //I'm assuming this endpoint is to send email based from the signature
+            //The important thing should be to return the proper status code based on
+            //the situation. The status codes used right now are placeholders
+            if (_emailService.SendEmail(email) == "Success")
+            {
+                return Ok();
+            }
+            else {
+                return BadRequest();
+            }
+
         }
     }
 }
