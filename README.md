@@ -1,5 +1,13 @@
 # Email Service Test
 
+## Assumptions
+
+`Connection Failed` exception: I'm assuming that I do not have to implement retry since callers hae implemented it, so I only wrote the test that replicates the failure
+
+`Unexpected Error` exception: I'm assuming the main issue is to handle the exception so that the service does not crash
+
+webhook endpoint: I'm assuming the endpoint should be doing something with the email and returning http codes.
+
 ### Problem
 This current implementation of an email service works most of the time. Callers of this service have implemented retry mechanisms to get their email sent. In the production environment, the service has been observed failing with one of two types of failures. 
 
