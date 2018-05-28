@@ -46,26 +46,54 @@ namespace EmailServiceTests
         }
 
         //TODO: More tests!
-
+        //Close method should propagate error up to caller
         [Fact]
-        public void Should_Handle_Connection_Failure()
+        public void Should_Replicate_Connection_Failure()
         {
             var email = new Email { To = "George", Body = "Very Important!" };
-            _mockClient.Setup(call => call.SendEmail(It.IsAny<string>(), It.IsAny<string>())).Throws(new Exception("Connection Failed"));
+            _mockClient.Setup(call => call.SendEmail(It.IsAny<string>(), It.IsAny<string>()))
+                .Throws(new Exception("Connection Failed"));
+
+            var ex = Record.Exception(() => _sut.SendEmailHelper(email));
+            Assert.NotNull(ex);
+            Assert.IsType<Exception>(ex);
+            Assert.Equal("Connection Failed", ex.Message);
+        }
+        
+        //Close method should propagate error up to caller
+        [Fact]
+        public void Should_Replicate_Closing_Failure()
+        {
+            _mockClient.Setup(call => call.Close())
+                .Throws(new Exception("Unexpected Error"));
+
+            var ex = Record.Exception(() => _sut.Close());
+            Assert.NotNull(ex);
+            Assert.IsType<Exception>(ex);
+            Assert.Equal("Unexpected Error", ex.Message);
+        }
+        //Testing different Paths for SendEmail
+        //SendEmail should return fail if connection failed
+        [Fact]
+        public void Should_Handle_Connetion_Failed()
+        {
+            var email = new Email { To = "George", Body = "Very Important!" };
+            _mockClient.Setup(call => call.SendEmail(It.IsAny<string>(), It.IsAny<string>()))
+                .Throws(new Exception("Connection Failed"));
 
             var result = _sut.SendEmail(email);
 
             Assert.Equal("Failure.", result);
         }
-
+        //SendEmail should return fail for unexpected error
         [Fact]
-        public void Should_Handle_Closing_Failure()
+        public void Should_Handle_Unexpected_Error()
         {
             var email = new Email { To = "George", Body = "Very Important!" };
             _mockClient.Setup(call => call.Close())
                 .Throws(new Exception("Unexpected Error"));
 
-            var result = _sut.Close(email);
+            var result = _sut.SendEmail(email);
 
             Assert.Equal("Failure.", result);
         }

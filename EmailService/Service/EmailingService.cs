@@ -10,7 +10,6 @@ namespace EmailService.Service
     {
         private readonly ILogger<EmailingService> _logger;
         private readonly IEmailClient _emailClient;
-        private Email email;
 
         public EmailingService(IEmailClient emailClient, ILogger<EmailingService> logger)
         {
@@ -20,12 +19,11 @@ namespace EmailService.Service
 
         public string SendEmail(Email email)
         {
-            this.email = email;
             var status = "";
             _logger.LogInformation($"Sending email to {email.To}");
             try
             {
-                status = SendEmailHelper();
+                status = SendEmailHelper(email);
             }
             catch (Exception e)
             {
@@ -47,23 +45,19 @@ namespace EmailService.Service
             }
             return status;
         }
+        //Separate Close() Method for unit testing
         public string Close()
         {
-            try
-            {
                 _emailClient.Close();
                 return "Success!";
-            }
         }
-
-        private String SendEmailHelper()
+        //Separate SendEmailHelper() Method for unit testing
+        public String SendEmailHelper(Email email)
         {
             _logger.LogInformation($"Sending email to {email.To}");
-            try
-            {
+
                 _emailClient.SendEmail(email.To, email.Body);
                 return "Success!";
-            }
         }
     }
 }
